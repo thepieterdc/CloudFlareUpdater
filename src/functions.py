@@ -74,6 +74,7 @@ def update(recordType: str, recordName: str, recordId: str, recordValue: str, zo
         return True
     else:
         print("[ERROR] Failed to set {} record for {} to {}.".format(recordType, recordName, recordValue))
+        print("        Error: {}".format(req.json()["error"]))
         return False
 
 
