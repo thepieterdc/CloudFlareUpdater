@@ -9,6 +9,8 @@ The following requirements must be met:
 ## Usage
 Configure your domains in config.py and run it using the following command:
 
-```python3 updater.py```
+```bash
+./updater.py
+```
 
 It is advised to install a cronjob to run this command to make sure the CloudFlare configuration is always up to date.
