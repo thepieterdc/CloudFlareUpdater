@@ -1,6 +1,7 @@
 import config
 import json
 import requests
+from autodetectors import recordValueDetectors
 
 
 def __get(endpoint: str) -> dict:
@@ -36,15 +37,6 @@ def __put(endpoint: str, data: dict) -> dict:
                         headers=headers).json()
 
 
-def ip() -> str:
-    """
-    Gets the WAN IP address.
-    :return: WAN IP address of this host
-    """
-    req = requests.get("http://ipinfo.io").json()
-    return req.get("ip")
-
-
 def recordIds(records: list, zoneId: str) -> dict:
     """
     Gets the record id's to use from CloudFlare.
@@ -78,6 +70,42 @@ def update(record: str, recordId: str, ip: str, zoneId: str) -> bool:
         return True
     print("[ERROR] Could not perform update on CloudFlare.")
     exit(3)
+
+
+def update(recordType: str, recordName: str, recordId: str, recordValue: str, zoneId: str) -> bool:
+    """
+    Updates a given record with the new ip-address.
+    :param recordType: the record type (A/AAAA)
+    :param recordName: the record name
+    :param recordId: the record id
+    :param recordValue: the new value
+    :param zoneId: the zone id
+    :return: True if successful
+    """
+    data = {"type": recordType, "name": recordName, "content": recordValue}
+    req = __put("/zones/{}/dns_records/{}".format(zoneId, recordId), data)
+    if req.get("success"):
+        return True
+    print("[ERROR] Could not perform update on CloudFlare.")
+    exit(3)
+
+
+def autodetectAndUpdate(recordType: str, recordName: str, recordId: str, zoneId: str) -> bool:
+    """
+    Autodetects IP address of the current host and updates the
+        requested record with it.
+    :param recordType: the record type (A/AAAA)
+    :param recordName: the record name
+    :param recordId: the record id
+    :param zoneId: the zone id
+    :return: True if successful
+    """
+    if recordType not in recordValueDetectors:
+        print("[ERROR] No autodetector for records of type {} found.".format(recordType))
+        exit(4)
+
+    recordValue = recordValueDetectors[recordType]()
+    return update(recordType, recordName, recordId, recordValue, zoneId)
 
 
 def zoneIds() -> dict:
