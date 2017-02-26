@@ -8,7 +8,7 @@ def __get(endpoint: str) -> dict:
     """
     Calls an endpoint of the CloudFlare API using GET.
     :param endpoint: the API endpoint to call
-    :return: the json response
+    :return: the JSON response
     """
     headers = {"X-Auth-Email": config.cf_email, "X-Auth-Key": config.cf_apikey}
     return requests.get("https://api.cloudflare.com/client/v4{}".format(endpoint), headers=headers).json()
@@ -19,7 +19,7 @@ def __post(endpoint: str, data: dict) -> dict:
     Calls an endpoint of the CloudFlare API using POST.
     :param endpoint: the API endpoint to call
     :param data: the data to post
-    :return: the json response
+    :return: the JSON response
     """
     headers = {"X-Auth-Email": config.cf_email, "X-Auth-Key": config.cf_apikey}
     return requests.post("https://api.cloudflare.com/client/v4{}".format(endpoint), json=data, headers=headers).json()
@@ -30,7 +30,7 @@ def __put(endpoint: str, data: dict) -> dict:
     Calls an endpoint of the CloudFlare API using PUT.
     :param endpoint: the API endpoint to call
     :param data: the data to put
-    :return: the json response
+    :return: the JSON response
     """
     headers = {"X-Auth-Email": config.cf_email, "X-Auth-Key": config.cf_apikey}
     return requests.put("https://api.cloudflare.com/client/v4{}".format(endpoint), data=json.dumps(data),
@@ -39,10 +39,10 @@ def __put(endpoint: str, data: dict) -> dict:
 
 def recordIds(records: list, zoneId: str) -> dict:
     """
-    Gets the record id's to use from CloudFlare.
+    Gets the record IDs to use from CloudFlare.
     :param records: a list of record names
-    :param zoneId: the zone id
-    :return: the record id's for every record name
+    :param zoneId: the zone ID
+    :return: the record IDs for every record name
     """
     req = __get("/zones/{}/dns_records".format(zoneId))
     if req.get("success"):
@@ -51,8 +51,9 @@ def recordIds(records: list, zoneId: str) -> dict:
             if host.get("name") in records:
                 ret[host.get("name")] = host.get("id")
         return ret
-    print("[ERROR] Could not get record id's from CloudFlare. Make sure to use the Global API key, not the Origin CA one.")
-    exit(2)
+    else:
+        print("[ERROR] Could not get record IDs from CloudFlare. Make sure to use the Global API key, not the Origin CA one.")
+        exit(2)
 
 
 def update(recordType: str, recordName: str, recordId: str, recordValue: str, zoneId: str) -> bool:
@@ -63,15 +64,17 @@ def update(recordType: str, recordName: str, recordId: str, recordValue: str, zo
     :param recordId: the record id
     :param recordValue: the new value
     :param zoneId: the zone id
-    :return: True if successful
+    :return: True if successful, else False
     """
     data = {"type": recordType, "name": recordName, "content": recordValue}
     req = __put("/zones/{}/dns_records/{}".format(zoneId, recordId), data)
+
     if req.get("success"):
         print("[SUCCESS] Set {} record for {} to {}.".format(recordType, recordName, recordValue))
         return True
-    print("[ERROR] Could not update {} record for {} on CloudFlare.".format(recordType, recordName))
-    exit(3)
+    else:
+        print("[ERROR] Failed to set {} record for {} to {}.".format(recordType, recordName, recordValue))
+        return False
 
 
 def autodetectAndUpdate(recordType: str, recordName: str, recordId: str, zoneId: str) -> bool:
@@ -94,8 +97,8 @@ def autodetectAndUpdate(recordType: str, recordName: str, recordId: str, zoneId:
 
 def zoneIds() -> dict:
     """
-    Gets the zone id's to use from CloudFlare.
-    :return: the zone id's for every host
+    Gets the zone IDs to use from CloudFlare.
+    :return: the zone IDs for every host
     """
     req = __get("/zones")
     if req.get("success"):
@@ -104,5 +107,6 @@ def zoneIds() -> dict:
             if host.get("name") in config.hosts:
                 ret[host.get("name")] = host.get("id")
         return ret
-    print("[ERROR] Could not get zone id's from CloudFlare.")
-    exit(1)
+    else:
+        print("[ERROR] Could not get zone IDs from CloudFlare.")
+        exit(1)
