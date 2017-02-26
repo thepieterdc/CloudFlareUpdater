@@ -5,8 +5,8 @@ def ip() -> str:
     Gets the WAN IPv4 address.
     :return: WAN IPv4 address of this host
     """
-    req = requests.get("http://ipinfo.io").json()
-    return req.get("ip")
+    req = requests.get("https://4.ifcfg.me/")
+    return req.text
 
 
 def ipv6() -> str:
@@ -14,7 +14,9 @@ def ipv6() -> str:
     Gets the WAN IPv6 address.
     :return: WAN IPv6 address of this host
     """
-    raise NotImplementedError
+    req = requests.get("https://6.ifcfg.me/")
+    return req.text
+
 
 recordValueDetectors = {"A": ip, "AAAA": ipv6}
 
