@@ -37,7 +37,7 @@ def __put(endpoint: str, data: dict) -> dict:
                         headers=headers).json()
 
 
-def recordIds(records: list, zoneId: str) -> dict:
+def recordIds(records: dict, zoneId: str) -> list:
     """
     Gets the record IDs to use from CloudFlare.
     :param records: a list of record names
@@ -46,10 +46,11 @@ def recordIds(records: list, zoneId: str) -> dict:
     """
     req = __get("/zones/{}/dns_records".format(zoneId))
     if req.get("success"):
-        ret = {}
+        ret = []
         for host in req.get("result"):
-            if host.get("name") in records:
-                ret[host.get("name")] = host.get("id")
+            name = host.get("name")
+            if name in records and host.get("type") in records[name]:
+                ret.append({"id": host.get("id"), "name": name, "type": host.get("type")})
         return ret
     else:
         print("[ERROR] Could not get record IDs from CloudFlare. Make sure to use the Global API key, not the Origin CA one.")

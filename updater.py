@@ -8,7 +8,8 @@ if __name__ == '__main__':
     zoneIds = functions.zoneIds()
 
     for host in config.hosts.keys():
-        recordIds = functions.recordIds(config.hosts[host].keys(), zoneIds[host])
-        for recordName in recordIds.keys():
-            for recordType in config.hosts[host][recordName]:
-                success = functions.autodetectAndUpdate(recordType, recordName, recordIds[recordName], zoneIds[host]) and success
+        zoneId = zoneIds[host]
+
+        recordIds = functions.recordIds(config.hosts[host], zoneId)
+        for record in recordIds:
+            success = functions.autodetectAndUpdate(record["type"], record["name"], record["id"], zoneId) and success
