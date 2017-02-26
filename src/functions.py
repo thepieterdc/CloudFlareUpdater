@@ -1,7 +1,7 @@
 import config
 import json
 import requests
-from autodetectors import recordValueDetectors
+from src.autodetectors import recordValueDetectors
 
 
 def __get(endpoint: str) -> dict:
@@ -51,7 +51,7 @@ def recordIds(records: list, zoneId: str) -> dict:
             if host.get("name") in records:
                 ret[host.get("name")] = host.get("id")
         return ret
-    print("[ERROR] Could not get record id's from CloudFlare.")
+    print("[ERROR] Could not get record id's from CloudFlare. Make sure to use the Global API key, not the Origin CA one.")
     exit(2)
 
 
@@ -68,8 +68,9 @@ def update(recordType: str, recordName: str, recordId: str, recordValue: str, zo
     data = {"type": recordType, "name": recordName, "content": recordValue}
     req = __put("/zones/{}/dns_records/{}".format(zoneId, recordId), data)
     if req.get("success"):
+        print("[SUCCESS] Set {} record for {} to {}.".format(recordType, recordName, recordValue))
         return True
-    print("[ERROR] Could not perform update on CloudFlare.")
+    print("[ERROR] Could not update {} record for {} on CloudFlare.".format(recordType, recordName))
     exit(3)
 
 

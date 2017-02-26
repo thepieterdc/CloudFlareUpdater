@@ -1,5 +1,5 @@
 cf_email = "user@domain.com"  # CloudFlare email address
-cf_apikey = ""  # CloudFlare API key
+cf_apikey = ""  # CloudFlare Global API key
 hosts = {
     "mydomain.com": {
         "server1.mydomain.com": ["A", "AAAA"],

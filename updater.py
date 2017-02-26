@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 import config
-import functions
+from src import functions
 
 if __name__ == '__main__':
     zoneIds = functions.zoneIds()
 
     for host in config.hosts.keys():
-        recordIds = functions.recordIds(config.hosts[host], zoneIds[host])
-        for record in recordIds.keys():
-            for recordType in recordIds[record]:
-                functions.autodetectAndUpdate(record, recordIds[record], zoneIds[host])
+        recordIds = functions.recordIds(config.hosts[host].keys(), zoneIds[host])
+        for recordName in recordIds.keys():
+            for recordType in config.hosts[host][recordName]:
+                functions.autodetectAndUpdate(recordType, recordName, recordIds[recordName], zoneIds[host])
