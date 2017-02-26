@@ -1,5 +1,8 @@
 import requests
+import functools
 
+
+@functools.lru_cache(maxsize=None)
 def ip() -> str:
     """
     Gets the WAN IPv4 address.
@@ -9,6 +12,7 @@ def ip() -> str:
     return req.text.strip()
 
 
+@functools.lru_cache(maxsize=None)
 def ipv6() -> str:
     """
     Gets the WAN IPv6 address.
