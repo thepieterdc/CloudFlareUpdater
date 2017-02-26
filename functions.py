@@ -55,23 +55,6 @@ def recordIds(records: list, zoneId: str) -> dict:
     exit(2)
 
 
-def update(record: str, recordId: str, ip: str, zoneId: str) -> bool:
-    """
-    Updates a given record with the new ip-address.
-    :param record: the record name
-    :param recordId: the record id
-    :param ip: the new value
-    :param zoneId: the zone id
-    :return: True if successful
-    """
-    data = {"type": "A", "name": record, "content": ip}
-    req = __put("/zones/{}/dns_records/{}".format(zoneId, recordId), data)
-    if req.get("success"):
-        return True
-    print("[ERROR] Could not perform update on CloudFlare.")
-    exit(3)
-
-
 def update(recordType: str, recordName: str, recordId: str, recordValue: str, zoneId: str) -> bool:
     """
     Updates a given record with the new ip-address.
