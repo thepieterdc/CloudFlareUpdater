@@ -1,0 +1,8 @@
+cf_email = "user@domain.com"  # CloudFlare email address
+cf_apikey = ""  # CloudFlare Global API key
+hosts = {
+    "mydomain.com": {
+        "server1.mydomain.com": ["A", "AAAA"],
+        "server2.mydomain.com": ["A"]
+    }
+} # the hosts among with the record names and types to update

@@ -1,10 +1,15 @@
+#!/usr/bin/env python3
+
 import config
-import functions
+from src import functions
 
 if __name__ == '__main__':
+    success = True
     zoneIds = functions.zoneIds()
 
     for host in config.hosts.keys():
-        recordIds = functions.recordIds(config.hosts[host], zoneIds[host])
-        for record in recordIds.keys():
-            functions.update(record, recordIds[record], functions.ip(), zoneIds[host])
+        zoneId = zoneIds[host]
+
+        recordIds = functions.recordIds(config.hosts[host], zoneId)
+        for record in recordIds:
+            success = functions.autodetectAndUpdate(record["type"], record["name"], record["id"], zoneId) and success
