@@ -5,11 +5,11 @@ from src import functions
 
 if __name__ == '__main__':
     success = True
-    zoneIds = functions.zoneIds()
+    zones = functions.zones()
 
     for host in config.hosts.keys():
-        zoneId = zoneIds[host]
+        zone = zones[host]
 
-        records = functions.recordInfo(config.hosts[host], zoneId)
+        records = functions.recordInfo(config.hosts[host], zone)
         for record in records:
             success = functions.autodetectAndUpdate(record) and success

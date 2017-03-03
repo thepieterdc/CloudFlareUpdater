@@ -1,6 +1,7 @@
 import config
 import json
 import requests
+from src.zone import Zone
 from src.autodetectors import recordValueDetectors
 
 
@@ -37,7 +38,7 @@ def __put(endpoint: str, data: dict) -> dict:
                         headers=headers).json()
 
 
-def recordInfo(records: dict, zoneId: str) -> list:
+def records(zone: Zone) -> {}:
     """
     Gets information about a record to use from CloudFlare.
     :param records: a dictionary of record names to lists of requests record types
@@ -86,7 +87,7 @@ def autodetectAndUpdate(recordInfo: dict) -> bool:
     """
     Autodetects IP address of the current host and updates the
         requested record with it.
-    :param recordInfo: dictionary with the record type (A/AAAA), name, id, and zoneId
+    :param recordInfo: dictionary with Records.
     :return: True if successful
     """
     if recordInfo["type"] not in recordValueDetectors:
@@ -101,17 +102,19 @@ def autodetectAndUpdate(recordInfo: dict) -> bool:
         return update(recordInfo, recordValue)
 
 
-def zoneIds() -> dict:
+def zones() -> dict:
     """
-    Gets the zone IDs to use from CloudFlare.
-    :return: the zone IDs for every host
+    Gets the zones to use from CloudFlare.
+    :return: the zones for every host
     """
     req = __get("/zones")
     if req.get("success"):
         ret = {}
         for host in req.get("result"):
             if host.get("name") in config.hosts:
-                ret[host.get("name")] = host.get("id")
+                zone = Zone(host)
+                zone.records = records(zone)
+                ret[host.get("name")] = zone
         return ret
     else:
         print("[ERROR] Could not get zone IDs from CloudFlare.")
