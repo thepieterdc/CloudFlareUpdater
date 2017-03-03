@@ -1,6 +1,7 @@
 import config
 import json
 import requests
+from src.record import Record
 from src.zone import Zone
 from src.autodetectors import recordValueDetectors
 
@@ -38,68 +39,67 @@ def __put(endpoint: str, data: dict) -> dict:
                         headers=headers).json()
 
 
-def records(zone: Zone) -> {}:
+def records(zone: Zone) -> []:
     """
     Gets information about a record to use from CloudFlare.
     :param records: a dictionary of record names to lists of requests record types
     :param zoneId: the zone ID
     :return: list of dictionaries with the record IDs, names, types and current values
     """
-    req = __get("/zones/{}/dns_records".format(zoneId))
+    req = __get("/zones/{}/dns_records".format(zone.id))
     if req.get("success"):
         ret = []
-        for host in req.get("result"):
-            name = host.get("name")
-            if name in records and host.get("type") in records[name]:
-                ret.append({
-                    "zoneId": zoneId,
-                    "id": host.get("id"),
-                    "name": name,
-                    "type": host.get("type"),
-                    "currentValue": host.get("content")
-                })
+        for rec in req.get("result"):
+            record = Record(rec, zone)
+            if record.name in config.hosts[zone.name] and record.type in config.hosts[zone.name][record.name]:
+                ret.append(record)
         return ret
     else:
-        print("[ERROR] Could not get record IDs from CloudFlare. Make sure to use the Global API key, not the Origin CA one.")
+        print(
+            "[ERROR] Could not get record IDs from CloudFlare. Make sure to use the Global API key, not the Origin CA one.")
         exit(2)
 
 
-def update(recordInfo: dict, newValue: str) -> bool:
+def update(record: Record) -> bool:
     """
     Updates a given record with the new ip-address.
-    :param recordInfo: dictionary with the record type (A/AAAA), name, id, and zoneId
-    :param newValue: the new value for the record
+    :param recordInfo: the updated record
     :return: True if successful, else False
     """
-    data = {"type": recordInfo["type"], "name": recordInfo["name"], "content": newValue}
-    req = __put("/zones/{zoneId}/dns_records/{id}".format(**recordInfo), data)
+    data = {"type": record.type, "name": record.name, "content": record.content, "ttl": record.ttl,
+            "proxied": record.proxied}
+    req = __put("/zones/{zoneId}/dns_records/{id}".format(zoneId=record.zone.id, id=record.id), data)
 
     if req.get("success"):
-        print("[SUCCESS] Set {type} record for {name} to {value}.".format(value=newValue, **recordInfo))
+        print("[SUCCESS] Set {type} record for {name} to {value}.".format(value=record.content, type=record.type,
+                                                                          name=record.name))
         return True
     else:
-        print("[ERROR] Failed to set {type} record for {name} to {value}.".format(value=newValue, **recordInfo))
+        print(
+            "[ERROR] Failed to set {type} record for {name} to {value}.".format(value=record.content, type=record.type,
+                                                                                name=record.name))
         print("        CF reported error: {}".format(req.get("error")))
         return False
 
 
-def autodetectAndUpdate(recordInfo: dict) -> bool:
+def autodetectAndUpdate(record: Record) -> bool:
     """
     Autodetects IP address of the current host and updates the
         requested record with it.
-    :param recordInfo: dictionary with Records.
+    :param record: the record to update
     :return: True if successful
     """
-    if recordInfo["type"] not in recordValueDetectors:
-        print("[ERROR] No autodetector for records of type {} found.".format(recordInfo["type"]))
+    if record.type not in recordValueDetectors:
+        print("[ERROR] No autodetector for records of type {} found.".format(record.type))
         exit(4)
 
-    recordValue = recordValueDetectors[recordInfo["type"]]()
-    if recordValue == recordInfo["currentValue"]:
-        print("[SUCCESS] {type} record for {name} not changed.".format(**recordInfo))
+    newval = recordValueDetectors[record.type]()
+    if newval == record.content:
+        print("[SUCCESS] {} record for {} not changed.".format(record.type, record.name))
         return True
     else:
-        return update(recordInfo, recordValue)
+        record.content = newval
+        return update(record)
 
 
 def zones() -> dict:

@@ -9,7 +9,5 @@ if __name__ == '__main__':
 
     for host in config.hosts.keys():
         zone = zones[host]
-
-        records = functions.recordInfo(config.hosts[host], zone)
-        for record in records:
+        for record in zone.records:
             success = functions.autodetectAndUpdate(record) and success
