@@ -42,9 +42,8 @@ def __put(endpoint: str, data: dict) -> dict:
 def records(zone: Zone) -> []:
     """
     Gets information about a record to use from CloudFlare.
-    :param records: a dictionary of record names to lists of requests record types
-    :param zoneId: the zone ID
-    :return: list of dictionaries with the record IDs, names, types and current values
+    :param zone: the zone information
+    :return: list of Records in the zone
     """
     req = __get("/zones/{}/dns_records".format(zone.id))
     if req.get("success"):
@@ -62,8 +61,8 @@ def records(zone: Zone) -> []:
 
 def update(record: Record) -> bool:
     """
-    Updates a given record with the new ip-address.
-    :param recordInfo: the updated record
+    Updates a given record with the new IP address.
+    :param record: the updated record
     :return: True if successful, else False
     """
     data = {"type": record.type, "name": record.name, "content": record.content, "ttl": record.ttl,
@@ -105,7 +104,7 @@ def autodetectAndUpdate(record: Record) -> bool:
 def zones() -> dict:
     """
     Gets the zones to use from CloudFlare.
-    :return: the zones for every host
+    :return: the Zones for every host
     """
     req = __get("/zones")
     if req.get("success"):
@@ -119,3 +118,4 @@ def zones() -> dict:
     else:
         print("[ERROR] Could not get zone IDs from CloudFlare.")
         exit(1)
+
