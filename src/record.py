@@ -10,3 +10,4 @@ class Record:
         self.proxied = data.get("proxied")
         self.ttl = data.get("ttl")
         self.zone = zone
+

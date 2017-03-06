@@ -3,3 +3,4 @@ class Zone:
         self.id = data.get("id")
         self.name = data.get("name")
         self.records = []
+
